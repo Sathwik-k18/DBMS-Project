@@ -1,10 +1,12 @@
 import { useState } from "react";
 import "./styles.css";
+import ComplaintForm from "./components/ComplaintForm";
 
 export default function App() {
   const [page, setPage] = useState("login");
   const [role, setRole] = useState("user");
   const [password, setPassword] = useState("");
+  const [showComplaintForm, setShowComplaintForm] = useState(false); // 🆕
 
   const passwords = {
     user: "user123",
@@ -24,16 +26,15 @@ export default function App() {
     setPage("login");
     setPassword("");
     setRole("user");
+    setShowComplaintForm(false); // 🆕 reset on logout
   };
 
-  // LOGIN PAGE
+  // LOGIN PAGE — unchanged
   if (page === "login") {
     return (
       <div className="login-page">
         <div className="login-top">
-          <h1 className="main-heading">
-            Municipal Corporation Complaint System
-          </h1>
+          <h1 className="main-heading">Municipal Corporation Complaint System</h1>
           <div className="divider"></div>
           <h2 className="title">🏛️ Municipal Corporation</h2>
           <p className="subtitle">Civic Complaint Management System</p>
@@ -65,9 +66,7 @@ export default function App() {
             />
           </div>
 
-          <button className="login-btn" onClick={handleLogin}>
-            Login
-          </button>
+          <button className="login-btn" onClick={handleLogin}>Login</button>
         </div>
       </div>
     );
@@ -80,13 +79,17 @@ export default function App() {
         <div className="logo">🏛️ Municipal Portal</div>
         <div className="nav-right">
           <span className="role-badge">{role.toUpperCase()}</span>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
+          <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
 
       <main className="main">
+
+        {/* 🆕 Complaint form modal — shown when user clicks "Submit New" */}
+        {showComplaintForm && (
+          <ComplaintForm onClose={() => setShowComplaintForm(false)} />
+        )}
+
         {role === "user" && (
           <>
             <h2 className="section-title">User Dashboard</h2>
@@ -99,7 +102,10 @@ export default function App() {
               <div className="card">
                 <h3>➕ New Complaint</h3>
                 <p>Report a civic issue in your area</p>
-                <button className="small-btn primary">Submit New</button>
+                {/* 🆕 This button now opens the form */}
+                <button className="small-btn primary" onClick={() => setShowComplaintForm(true)}>
+                  Submit New
+                </button>
               </div>
               <div className="card">
                 <h3>📍 Nearby Issues</h3>
@@ -155,6 +161,7 @@ export default function App() {
             </div>
           </>
         )}
+
       </main>
     </div>
   );

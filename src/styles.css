@@ -148,3 +148,63 @@ button:hover {
   padding: 8px 15px;
   margin-top: 10px;
 }
+/* MODAL OVERLAY */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* MODAL BOX */
+.modal-box {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-box h3 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #1b5e20;
+}
+
+/* PRIMARY SMALL BUTTON */
+.small-btn.primary {
+  background: #1b5e20;
+  color: white;
+}
+
+.small-btn.primary:hover {
+  background: #0d3b12;
+}
+
+/* ROLE BADGE */
+.role-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+  width: auto;
+  padding: 7px 15px;
+  margin-top: 0;
+  background: transparent;
+  border: 1px solid white;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.15);
+}

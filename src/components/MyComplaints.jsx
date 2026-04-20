@@ -1,0 +1,130 @@
+import { useEffect, useState } from "react";
+import { fetchMyComplaints } from "../utils/api";
+
+export default function MyComplaints({ user }) {
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchMyComplaints(user.email);
+      setComplaints(data);
+      setLoading(false);
+    };
+    load();
+  }, [user.email]);
+
+  const filtered = complaints.filter((c) => {
+    if (filter === "all") return true;
+    if (filter === "pending") return c.status === "pending";
+    if (filter === "resolved") return c.status === "resolved";
+    return true;
+  });
+
+  if (loading) return <p>Loading your complaints...</p>;
+
+  return (
+    <div>
+
+      {/* Stats */}
+      <div className="grid" style={{ marginBottom: "20px" }}>
+        <div className="card" style={{ textAlign: "center" }}>
+          <h3 style={{ color: "#1b5e20" }}>{complaints.length}</h3>
+          <p>Total Assigned</p>
+        </div>
+        <div className="card" style={{ textAlign: "center" }}>
+          <h3 style={{ color: "#f57f17" }}>
+            {complaints.filter(c => c.status === "pending").length}
+          </h3>
+          <p>Pending</p>
+        </div>
+        <div className="card" style={{ textAlign: "center" }}>
+          <h3 style={{ color: "#2e7d32" }}>
+            {complaints.filter(c => c.status === "resolved").length}
+          </h3>
+          <p>Resolved</p>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+        {["all", "pending", "resolved"].map(f => (
+          <button key={f} className="small-btn"
+            style={{
+              background: filter === f ? "#1b5e20" : "#ccc",
+              color: filter === f ? "white" : "#333"
+            }}
+            onClick={() => setFilter(f)}>
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* No complaints message */}
+      {filtered.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: "40px" }}>
+          <p style={{ color: "#888", fontSize: "16px" }}>
+            No complaints assigned to you yet.
+          </p>
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{
+            width: "100%", borderCollapse: "collapse",
+            background: "white", borderRadius: "10px", overflow: "hidden"
+          }}>
+            <thead>
+              <tr style={{ background: "#1b5e20", color: "white" }}>
+                <th style={th}>ID</th>
+                <th style={th}>Citizen Name</th>
+                <th style={th}>Complaint Type</th>
+                <th style={th}>Description</th>
+                <th style={th}>Address</th>
+                <th style={th}>Status</th>
+                <th style={th}>Engineer Status</th>
+                <th style={th}>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.id} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={td}>{c.id}</td>
+                  <td style={td}>{c.name}</td>
+                  <td style={td}>{c.complaint_type}</td>
+                  <td style={td}>{c.description}</td>
+                  <td style={td}>{c.address || "—"}</td>
+
+                  <td style={td}>
+                    <span style={{
+                      padding: "3px 10px", borderRadius: "20px", fontSize: "12px",
+                      background: c.status === "resolved" ? "#c8e6c9" : "#fff9c4",
+                      color: c.status === "resolved" ? "#1b5e20" : "#f57f17"
+                    }}>
+                      {c.status}
+                    </span>
+                  </td>
+
+                  <td style={td}>
+                    <span style={{
+                      padding: "3px 10px", borderRadius: "20px", fontSize: "12px",
+                      background: c.engineer_status === "assigned" ? "#bbdefb" : "#f5f5f5",
+                      color: c.engineer_status === "assigned" ? "#1565c0" : "#888"
+                    }}>
+                      {c.engineer_status}
+                    </span>
+                  </td>
+
+                  <td style={td}>{new Date(c.created_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const th = { padding: "12px 15px", textAlign: "left", fontWeight: "500" };
+const td = { padding: "10px 15px", fontSize: "14px" };

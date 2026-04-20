@@ -1,38 +1,52 @@
 import { useState } from "react";
+import { submitComplaint } from "../utils/api";
 import { sendEmail } from "../utils/sendEmail";
 
-export default function ComplaintForm({ onClose }) {
-  const [form, setForm] = useState({ name: "", email: "", title: "", description: "" });
-  const [status, setStatus] = useState(null); // null | "sending" | "success" | "error"
+export default function ComplaintForm({ onClose, user }) {
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
+    address: "",
+    complaint_type: "",
+    description: "",
+  });
+  const [status, setStatus] = useState(null);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("sending");
 
-    // Send confirmation email
-    const result = await sendEmail({
-      name: form.name,
-      email: form.email,
-      complaintTitle: form.title,
-    });
+    try {
+      const result = await submitComplaint(form);
 
-    setStatus(result.success ? "success" : "error");
+      if (result.error) {
+        alert("❌ " + result.error);
+        setStatus(null);
+        return;
+      }
+
+      await sendEmail({
+        name: form.name,
+        email: form.email,
+        complaintTitle: form.complaint_type,
+      });
+
+      setStatus("success");
+    } catch (err) {
+      setStatus("error");
+    }
   };
 
-  // Show success message after submission
   if (status === "success") {
     return (
       <div className="modal-overlay">
         <div className="modal-box">
           <h3>✅ Complaint Submitted!</h3>
-          <p>A confirmation email has been sent to <strong>{form.email}</strong>.</p>
-          <button className="small-btn primary" onClick={onClose}>
-            Back to Dashboard
-          </button>
+          <p>Saved and confirmation email sent to <strong>{form.email}</strong>.</p>
+          <button className="small-btn primary" onClick={onClose}>Back to Dashboard</button>
         </div>
       </div>
     );
@@ -42,59 +56,50 @@ export default function ComplaintForm({ onClose }) {
     <div className="modal-overlay">
       <div className="modal-box">
         <h3>➕ Submit New Complaint</h3>
-
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label>Your Name</label>
-            <input
-              name="name"
-              placeholder="Full name"
-              value={form.name}
-              onChange={handleChange}
-              required
-            />
+            <label>Full Name *</label>
+            <input name="name" value={form.name} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
-            <label>Your Email</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
+            <label>Email *</label>
+            <input name="email" type="email" value={form.email} onChange={handleChange} required />
           </div>
-
           <div className="input-group">
-            <label>Issue Title</label>
-            <input
-              name="title"
-              placeholder="e.g. Broken road near park"
-              value={form.title}
-              onChange={handleChange}
-              required
-            />
+            <label>Phone</label>
+            <input name="phone" placeholder="Phone number" value={form.phone} onChange={handleChange} />
           </div>
-
           <div className="input-group">
-            <label>Description</label>
+            <label>Address</label>
+            <input name="address" placeholder="Your area" value={form.address} onChange={handleChange} />
+          </div>
+          <div className="input-group">
+            <label>Complaint Type *</label>
+            <select name="complaint_type" value={form.complaint_type} onChange={handleChange} required>
+              <option value="">-- Select Type --</option>
+              <option value="Road">Road</option>
+              <option value="Water Supply">Water Supply</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Waste Management">Waste Management</option>
+              <option value="Street Light">Street Light</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div className="input-group">
+            <label>Description *</label>
             <textarea
               name="description"
               placeholder="Describe the issue..."
               value={form.description}
               onChange={handleChange}
               rows={3}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px", resize: "vertical" }}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px", resize: "vertical", boxSizing: "border-box" }}
               required
             />
           </div>
 
           {status === "error" && (
-            <p style={{ color: "red", fontSize: "13px" }}>
-              ❌ Email failed to send. Check console for details.
-            </p>
+            <p style={{ color: "red", fontSize: "13px" }}>❌ Submission failed. Is backend running?</p>
           )}
 
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
